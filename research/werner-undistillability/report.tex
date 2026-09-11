@@ -1,0 +1,741 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amsthm,amssymb,booktabs,graphicx}
+\usepackage[margin=1in]{geometry}
+\usepackage[most]{tcolorbox}
+\usepackage{hyperref}
+
+\newtcolorbox{verification}{colback=gray!5,colframe=gray!50,title=Verification}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{remark}{Remark}
+\theoremstyle{plain}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{conjecture}{Conjecture}
+
+\newcommand{\HS}{\mathrm{HS}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\id}{\mathrm{id}}
+\newcommand{\CC}{\mathbb{C}}
+
+\title{Searching for an undistillable Werner state:\\
+the $k$-copy endpoint problem for $k\ge 3$}
+\author{Computational study}
+\date{9 September 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We study whether an NPT (non-positive partial transpose) Werner state can fail to be
+distillable --- the NPT bound entanglement problem, open since 1999. We do not settle it.
+We contribute two things. (i) \emph{Better constants}, and with them a quantitative
+sharpening of the (easy) fact that for every $n$ there are NPT Werner states that are
+$n$-copy undistillable in local dimension $O(n)$ (Proposition~\ref{thm:existence}); the
+existence is a one-line corollary of $\gamma_n>0$, so the content is the dimension. Concretely: lifting the
+sharp rank-two partial-trace inequality of Fraser--Huber--Pozsgay--Vona and
+Bharti--Gajjala--Haug to arbitrary untraced \emph{spectator} subsystems, and optimising the
+resulting linear program, gives $\gamma_3\ge0.3129$, $\gamma_4\ge0.2277$,
+$\gamma_5\ge0.1790$ --- roughly double the published values, halving the dimension the
+family needs, and dropping the three-copy consequence from $d\ge7$ to $d\ge4$
+($\varrho(4,-0.3)$ is NPT and provably three-copy undistillable). (ii) \emph{Locating the
+$k=3$ gap}: Wu--Zou prove the three-copy endpoint for positive semidefinite and normal
+rank-two operators; we show numerically that every equality configuration has a local site
+of rank $\le2$ (inside their proved region) and that on a sector containing everything they
+leave open the form is bounded away from zero, and we prove a spread bound explaining why
+--- it settles the maximally-spread case for $d\ge5$ and falls short at $d=3,4$ only by a
+constant factor. Separately, $45$ global searches and an exact Hessian analysis at $18$
+equality points ($k\le7$) find no counterexample to the endpoint conjecture
+$\theta_k(c)=(1-2c)(1-c)^{k-1}$.
+\end{abstract}
+
+\section{Setting and reductions}
+
+\begin{definition}[Werner states]
+On $\CC^d\otimes\CC^d$ with flip $F(x\otimes y)=y\otimes x$,
+\[
+\varrho(d,\alpha)=\frac{I_{d^2}+\alpha F}{d^2+\alpha d},\qquad \alpha\in[-1,1].
+\]
+\end{definition}
+Since $F^\Gamma=d\,Q$ with $Q=|\Phi\rangle\langle\Phi|$ and
+$|\Phi\rangle=d^{-1/2}\sum_i|ii\rangle$, we get
+$\varrho^\Gamma=(I+\alpha d\,Q)/(d^2+\alpha d)$, so $\varrho(d,\alpha)$ is NPT iff
+$\alpha<-1/d$. For Werner states PPT $\Leftrightarrow$ separable, so the NPT range is
+exactly $\alpha\in[-1,-1/d)$. Throughout we write $c=-\alpha$, so the NPT range is
+$c\in(1/d,1]$.
+
+By the Horodecki criterion, $\varrho$ is $k$-copy distillable iff some Schmidt-rank-$\le2$
+vector $|\phi\rangle$ has $\langle\phi|(\varrho^{\otimes k})^\Gamma|\phi\rangle<0$, and
+$\varrho$ is distillable iff it is $k$-copy distillable for some $k$.
+
+\paragraph{R1: the map form.} Let $\Lambda_c:M_d\to M_d$, $\Lambda_c(X)=\Tr(X)I_d-cX$.
+Its Choi matrix is $J(\Lambda_c)=I-cd\,Q=(d^2-cd)\,\varrho(d,-c)^\Gamma$. Since
+$(\varrho^{\otimes k})^\Gamma=(\varrho^\Gamma)^{\otimes k}$ and reordering tensor factors
+preserves Schmidt rank across the $A{:}B$ cut, $J(\Lambda_c)^{\otimes k}
+=J(\Lambda_c^{\otimes k})$ up to such a reordering. Using ``$\Lambda$ is $m$-positive iff
+$J(\Lambda)$ is positive on Schmidt rank $\le m$ vectors'':
+\[
+\boxed{\ \varrho(d,-c)\text{ is }k\text{-copy \emph{un}distillable}\iff
+\Lambda_c^{\otimes k}\text{ is }2\text{-positive}.\ }
+\]
+Reference points: $\Lambda_c$ is positive iff $c\le1$, completely positive iff $c\le1/d$
+(the PPT boundary), and $m$-positive iff $c\le1/m$; in particular $c_1=1/2$.
+
+\paragraph{R2: the biquadratic form.} Expanding
+$\Lambda_c^{\otimes k}=\prod_i(\Tr_i(\cdot)I_i-c\,\id_i)$ and writing index $0$ for a
+qubit and $1,\dots,k$ for the qudits, put
+$T_c(\rho)=(\id_2\otimes\Lambda_c^{\otimes k})(\rho)
+=\sum_{S\subseteq[k]}(-c)^{|S|}\rho_{0S}\otimes I_{S^c}$. As $T_c$ is
+Hilbert--Schmidt self-adjoint, $B_c(\psi,\chi):=\langle\chi|T_c(|\psi\rangle\langle\psi|)|\chi\rangle$
+is symmetric and
+\[
+B_c(\psi,\chi)=\sum_{S\subseteq[k]}(-c)^{|S|}\Tr\!\left[\rho^\psi_{0S}\,\rho^\chi_{0S}\right]
+=\langle\psi\otimes\chi|\;F_0\otimes(I-cF)^{\otimes k}\;|\psi\otimes\chi\rangle .
+\]
+$k$-copy undistillability $\iff B_c(\psi,\chi)\ge0$ for all
+$\psi,\chi\in\CC^2\otimes(\CC^d)^{\otimes k}$.
+
+\paragraph{R3: marginal purities.} On the diagonal $\chi=\psi$, using that complementary
+marginals of a pure state have equal purity,
+\[
+B_c(\psi,\psi)=\sum_{R\subseteq[k]}(-c)^{k-|R|}\Tr\!\left[(\rho^\psi_R)^2\right],
+\]
+a statement purely about the marginal purities of a pure state of one qubit and $k$ qudits.
+
+\paragraph{Rank-two operator form.} Writing $C=\sum_{a=1,2}|\chi_a\rangle\langle\psi_a|$,
+the same quantity is
+\[
+q_k(\alpha,C)=\sum_{S\subseteq[k]}\alpha^{|S|}\,\|\Tr_S C\|_{\HS}^2,\qquad \operatorname{rank}C\le2 ,
+\]
+and we study
+\[
+\theta_k(c)\;=\;\min\Big\{\,q_k(-c,C)/\|C\|_{\HS}^2\;:\;\operatorname{rank}C\le 2\,\Big\},
+\qquad
+c_k=\sup\{c:\theta_k(c)\ge0\}.
+\]
+$\theta_k(c)<0$ certifies $k$-copy distillability. $\theta_1(c)=1-2c$ exactly.
+
+\begin{remark}[The conjecture is empty for $d\le2$]
+For $c\le1/d$ the state is separable, hence undistillable, so $\theta_k(c)\ge0$
+automatically. At $d=2$ the endpoint $c=1/2$ equals $1/d$, so the endpoint statement has
+content only for $d\ge3$. We still run $d=2$ as a consistency check.
+\end{remark}
+
+\begin{verification}
+\textbf{What:} the full chain R1--R3, the Choi identification, the $m$-positivity
+reference points, the PPT/separability boundary, symmetry of $B_c$, and the exact
+correspondence $\langle\phi|J(\Lambda_c)^{\otimes k}|\phi\rangle=B_c(\psi,\chi)$ for
+$\phi=\sum_a|\chi_a\rangle\otimes|\bar\psi_a\rangle$.
+
+\textbf{Method:} numeric, randomized, over $d\in\{2,3,4,5\}$, $k\in\{1,2,3,4\}$.
+
+\textbf{Script:} \texttt{scripts/verify\_reduction.py}
+
+\textbf{Outcome:} pass (all 60 checks).
+\end{verification}
+
+\section{Status of the problem}
+
+\begin{itemize}
+\item $c_1=1/2$ for every $d$ (elementary; reproduced exactly below).
+\item $c_2=1/2$ for every $d$. Proved independently in July 2026 by Fraser, Huber,
+Pozsgay and Vona (arXiv:2607.24309), via the sharp inequality
+$\|\Tr_1C\|_F^2+\|\Tr_2C\|_F^2\le r\|C\|_F^2+\tfrac1r|\Tr C|^2$ for
+$\operatorname{rank}C\le r$, and by Fu, Gao and Park (arXiv:2607.21367). This also settled
+Problem 5 of \emph{Five Open Problems in Quantum Information Theory}, PRX Quantum 3,
+010101 (2022), on the two-ququart state $\varrho(4,-\tfrac12)$.
+\item $c_k$ for $k\ge3$ is \textbf{open}. Bharti, Gajjala and Haug (arXiv:2607.24479)
+give explicit constants $\gamma_k$ with $\alpha\ge-\gamma_k$ implying $k$-copy
+undistillability in every dimension: $\gamma_2=1/2$, $\gamma_3=1/6$,
+$\gamma_4\approx0.1241$, $\gamma_5\approx0.0981$, with $k\gamma_k\to\operatorname{arsinh}(1/2)$.
+Since $\gamma_k\to0$ these give nothing uniform in $k$.
+\item For the \emph{wider} two-parameter DiVincenzo--Shor--Smolin--Terhal--Thapliyal
+family (Phys.\ Rev.\ A 61, 062312 (2000)), Tabia, Chen and Hsieh (arXiv:2608.08836,
+August 2026) \emph{disproved} the analogous conjecture already at two copies. This is why
+a $k=3$ counterexample for Werner states is a serious possibility rather than a remote one,
+and it motivated the structured searches below.
+\end{itemize}
+
+\section{A rigorous improvement of the constants $\gamma_k$}
+\label{sec:gamma}
+
+The recursion below combines with the sharp rank-two partial-trace inequality
+\[
+\|\Tr_UC\|_\HS^2+\|\Tr_VC\|_\HS^2\;\le\;2\|C\|_\HS^2+\tfrac12|\Tr C|^2,
+\qquad \operatorname{rank}C\le2,\ U\sqcup V=\text{all systems},
+\]
+to give constants larger than the published $\gamma_k$ for $k=3,4,5$. That inequality was
+obtained independently and concurrently in July 2026 by Fraser, Huber, Pozsgay and Vona
+(arXiv:2607.24309, in a general-rank form with $r\|C\|^2+\tfrac1r|\Tr C|^2$) and by
+Bharti, Gajjala and Haug (arXiv:2607.24479, Theorem~1.1, the $r=2$ case); either suffices
+as the input here. Everything below is a proof given that input, and every step is checked
+numerically in \texttt{scripts/verify\_gamma.py}.
+
+\begin{lemma}[Rank bounds]
+If $\operatorname{rank}C\le r$ then $\|\Tr_S C\|_\HS^2\le r\|C\|_\HS^2$ for every $S$, and
+$|\Tr C|^2\le r\|C\|_\HS^2$.
+\end{lemma}
+\begin{proof}
+Write the SVD $C=\sum_{i\le r}\sigma_i|a_i\rangle\langle b_i|$. Reshaping $a_i,b_i$ across
+the cut $S^c{:}S$ as matrices $A_i,B_i$ gives $\Tr_S(|a_i\rangle\langle b_i|)=A_iB_i^\dagger$,
+so $\|\Tr_S(|a_i\rangle\langle b_i|)\|_\HS\le\|A_i\|_F\|B_i\|_{\rm op}\le1$. Hence
+$\|\Tr_SC\|_\HS\le\sum_i\sigma_i\le\sqrt r\,\|C\|_\HS$. The same Cauchy--Schwarz step gives
+the trace bound.
+\end{proof}
+
+\begin{lemma}[Block recursion]
+Let $C^{(mm')}=(I\otimes\langle m|)\,C\,(I\otimes|m'\rangle)$ be the blocks of $C$ in
+site $k$. Then $\operatorname{rank}C^{(mm')}\le\operatorname{rank}C$,
+$\sum_{m,m'}\|C^{(mm')}\|_\HS^2=\|C\|_\HS^2$, and
+\[
+q_k(\alpha,C)=\sum_{m,m'}q_{k-1}\big(\alpha,C^{(mm')}\big)+\alpha\,q_{k-1}\big(\alpha,\Tr_kC\big).
+\]
+\end{lemma}
+\begin{proof}
+Split the sum over $S\subseteq[k]$ according to whether $k\in S$. For $S\not\ni k$,
+$\Tr_SC=\sum_{m,m'}(\Tr_SC^{(mm')})\otimes|m\rangle\langle m'|$, so
+$\|\Tr_SC\|^2=\sum_{m,m'}\|\Tr_SC^{(mm')}\|^2$. For $S\ni k$, $\Tr_SC=\Tr_{S\setminus k}(\Tr_kC)$.
+\end{proof}
+
+\begin{proposition}[Two copies, sharp]
+For $0\le c\le\tfrac12$, $\ \theta_2(c)=(1-2c)(1-c)$.
+\end{proposition}
+\begin{proof}
+Upper bound: the padded one-copy optimiser. Lower bound: by FHPV with $r=2$,
+$\|\Tr_1C\|^2+\|\Tr_2C\|^2\le2\|C\|^2+\tfrac12|\Tr C|^2$, so
+$q_2(-c,C)\ge(1-2c)\|C\|^2+(c^2-\tfrac c2)|\Tr C|^2$. For $c\le\tfrac12$ the second
+coefficient is $\le0$, and $|\Tr C|^2\le2\|C\|^2$, giving
+$q_2(-c,C)\ge(1-3c+2c^2)\|C\|^2=(1-c)(1-2c)\|C\|^2$.
+\end{proof}
+
+\begin{proposition}[Recursive step]
+For $\operatorname{rank}C\le2$,
+$q_{k-1}(-c,\Tr_kC)\le\big((1+c)^{k-1}+(1-c)^{k-1}\big)\|C\|_\HS^2$, hence
+\[
+\theta_k(c)\;\ge\;\theta_{k-1}(c)-c\big((1+c)^{k-1}+(1-c)^{k-1}\big).
+\]
+\end{proposition}
+\begin{proof}
+$q_{k-1}(-c,\Tr_kC)=\sum_{S\subseteq[k-1]}(-c)^{|S|}\|\Tr_{S\cup\{k\}}C\|^2$. Discard the
+(non-positive) odd-$|S|$ terms and bound each even one by $2\|C\|^2$ using the rank lemma:
+the total is $2\|C\|^2\sum_{|S|\text{ even}}c^{|S|}
+=\|C\|^2\big((1+c)^{k-1}+(1-c)^{k-1}\big)$. Combine with the block recursion, using
+$q_{k-1}(-c,C^{(mm')})\ge\theta_{k-1}\|C^{(mm')}\|^2$ (each block has rank $\le2$) and
+$\sum\|C^{(mm')}\|^2=\|C\|^2$.
+\end{proof}
+
+\begin{corollary}
+$\theta_3(c)\ge1-5c+2c^2-2c^3$, so $\gamma_3\ge0.214451$; likewise
+$\gamma_4\ge0.145384$ and $\gamma_5\ge0.110812$.
+\end{corollary}
+
+These exceed the published $\gamma_3=1/6$, $\gamma_4\approx0.1241$,
+$\gamma_5\approx0.0981$. The practical consequence is the dimension at which the
+window ``NPT \emph{and} provably $k$-copy undistillable'' becomes non-empty, i.e.\ the
+smallest $d$ with $1/d<\gamma_k$:
+\[
+k=3:\quad d\ge7\ \longrightarrow\ d\ge5 .
+\]
+So $\varrho(5,\alpha)$ for $-0.2144\le\alpha<-0.2$ --- for instance $\varrho(5,-0.21)$ ---
+is NPT and provably three-copy undistillable, which the published constant does not reach.
+Asymptotically the published constants are the better ones
+($k\gamma_k\to\operatorname{arsinh}(1/2)\approx0.4812$ versus $\approx0.443$ here), so this
+is an improvement for small $k$ only.
+
+\begin{verification}
+\textbf{What:} the rank lemma, the FHPV inequality (as used, for $r=1,\dots,4$), the block
+recursion and rank/Frobenius decomposition, $\theta_2\ge(1-c)(1-2c)$, the recursive step,
+and the resulting polynomials and roots.
+
+\textbf{Method:} numeric, randomized rank-$r$ operators over $d\in\{2,3,4\}$,
+$k\in\{1,2,3,4\}$, $c\in\{0.05,\dots,0.5\}$; exact identity checks for the recursion.
+
+\textbf{Script:} \texttt{scripts/verify\_gamma.py}
+
+\textbf{Outcome:} pass (8/8 checks). Tightest observed margins: rank lemma ratio $0.990$,
+FHPV ratio $0.986$, $\theta_2$ slack $+5.3\times10^{-2}$.
+\end{verification}
+
+\subsection{A linear-programming bound: FHPV with a spectator}
+
+The recursion above is one instance of a much more general fact. Recall that the step
+``apply FHPV to each block $C^{(mm')}$ and sum'' used only that a block of a rank-$\le2$
+operator has rank $\le2$. Carrying that out for an arbitrary spectator set gives:
+
+\begin{lemma}[FHPV with a spectator]
+\label{lem:spectator}
+Let $\operatorname{rank}C\le2$ on $H_A\otimes H_B\otimes H_E$, with $A,B$ disjoint and
+non-empty and $E$ an arbitrary (possibly empty) set of spectator sites. Then
+\[
+\|\Tr_AC\|_\HS^2+\|\Tr_BC\|_\HS^2\;\le\;2\|C\|_\HS^2+\tfrac12\|\Tr_{A\cup B}C\|_\HS^2 .
+\]
+\end{lemma}
+\begin{proof}
+Write $C$ in blocks over $E$. Each block is a compression of $C$, hence has rank $\le2$, so
+the rank-two inequality above applies to it on $H_A\otimes H_B$. Summing over blocks and using
+$\sum_{m,m'}\|\Tr_AC^{(mm')}\|^2=\|\Tr_AC\|^2$, $\sum_{m,m'}\|C^{(mm')}\|^2=\|C\|^2$ and
+$\sum_{m,m'}|\Tr C^{(mm')}|^2=\|\Tr_{A\cup B}C\|^2$ gives the claim. $E=\emptyset$ is FHPV.
+\end{proof}
+
+Now set $x_S=\|\Tr_SC\|_\HS^2/\|C\|_\HS^2$, so $x_\emptyset=1$ and
+$q_k(-c,C)/\|C\|^2=\sum_S(-c)^{|S|}x_S$. Every rank-$\le2$ operator gives a point
+satisfying $0\le x_S\le2$ (rank lemma) and one instance of Lemma~\ref{lem:spectator} for
+each ordered pair of disjoint non-empty $A,B\subseteq[k]$. Hence
+\[
+\theta_k(c)\;\ge\;\min\Big\{\textstyle\sum_S(-c)^{|S|}x_S \;:\; x_\emptyset=1,\;0\le x_S\le2,\;
+x_A+x_B\le2+\tfrac12x_{A\cup B}\Big\},
+\]
+a linear program in $2^k$ variables whose optimum is certified by LP duality. This is a
+dimension-free lower bound. Solving it:
+
+\begin{center}
+{\setlength{\tabcolsep}{7pt}\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{rllllr}
+\toprule
+$k$ & $\gamma_k$ (LP) & $\gamma_k$ (recursion) & $\gamma_k$ (published) & $k\gamma_k$ (LP) & NPT window from \
+\midrule
+2 & $0.500000$ & $0.500000$ & $0.500000$ & $1.000$ & $d\ge3$ \
+3 & $\mathbf{0.312908}$ & $0.214451$ & $0.166667$ & $0.939$ & $\mathbf{d\ge4}$ \
+4 & $\mathbf{0.227725}$ & $0.145384$ & $0.124104$ & $0.911$ & $d\ge5$ \
+5 & $\mathbf{0.179029}$ & $0.110812$ & $0.098111$ & $0.895$ & $d\ge6$ \
+6 & $0.150694$ & --- & --- & $0.904$ & $d\ge7$ \
+7 & $0.128205$ & --- & --- & $0.897$ & $d\ge8$ \
+8 & $0.111596$ & --- & --- & $0.893$ & $d\ge9$ \
+9 & $0.099228$ & --- & --- & $0.893$ & $d\ge11$ \
+\bottomrule
+\end{tabular}}
+\end{center}
+
+The LP bound roughly doubles the published constants --- $k\gamma_k$ sits near $0.89$
+against $\operatorname{arsinh}(1/2)\approx0.4812$, a factor $\approx1.86$ --- and pushes the
+three-copy result down to $d=4$: \emph{every} Werner state $\varrho(4,\alpha)$ with $-0.3129\le\alpha<-0.25$ is NPT
+and provably three-copy undistillable, for instance $\varrho(4,-0.3)$. It just misses
+$d=3$, which would need $\gamma_3>1/3$.
+
+\begin{verification}
+\textbf{What:} Lemma~\ref{lem:spectator} for every disjoint pair $(A,B)$; the rank bound
+$x_S\le2$; the LP values and roots; and two independent sanity checks --- the LP bound
+never exceeds the padded upper bound $(1-2c)(1-c)^{k-1}$, and never exceeds
+$q_k(-c,C)/\|C\|^2$ for randomly sampled rank-2 $C$.
+
+\textbf{Method:} numeric, randomized rank-2 operators, $k\in\{2,3,4\}$, $d\in\{2,3,4\}$;
+exact LP via \texttt{scipy.optimize.linprog} (HiGHS).
+
+\textbf{Script:} \texttt{scripts/verify\_lp\_gamma.py}
+
+\textbf{Outcome:} pass (5/5). Tightest observed margin on Lemma~\ref{lem:spectator}:
+$\mathrm{lhs}/\mathrm{rhs}=0.775$; minimum slack of the LP bound against sampled rank-2
+operators $+0.111$.
+\end{verification}
+
+\subsection{Relation to Bharti--Gajjala--Haug: what is new here}
+\label{sec:novelty}
+
+Checked against the full text of arXiv:2607.24479 (v1, 27 July 2026), not just its abstract:
+
+\begin{itemize}
+\item Their Theorem~1.1 (Eq.~2), restated as Theorem~6.1 (Eq.~69), is
+$\|\Tr_UC\|_2^2+\|\Tr_VC\|_2^2\le2\|C\|_2^2+\tfrac12|\Tr C|^2$ for rank-$\le2$ $C$ --- the
+$r=2$ case of the FHPV inequality, which they prove independently (FHPV was communicated to
+them privately on 25 July 2026 and is \emph{not} used in their proofs). So the input to
+Lemma~\ref{lem:spectator} is available from either paper.
+\item In every statement of theirs, $U$ and $V$ are a \textbf{complementary} pair:
+$U\cup V$ is all $k$ systems. The same is true of the many-copy Theorem~9.1, whose
+inputs are Eqs.~(81)--(82), $A_J+A_{J^c}\le2N+\tfrac T2$ and $|A_J-A_{J^c}|\le2N-\tfrac T2$,
+again for complementary bipartitions $J,J^c$.
+\item They do \textbf{not} state a version with untraced spectator systems, i.e.\ our
+Lemma~\ref{lem:spectator}, and they do \textbf{not} optimise over the quantities
+$\|\Tr_SC\|^2$ --- Theorem~9.1 is a fixed combinatorial pairing of $J$ with $J^c$, not an
+optimisation. Their Table~1 gives $\gamma_3=0.166667$, $\gamma_4=0.124104$,
+$\gamma_5=0.098111$, and Corollary~9.4 gives $k\gamma_k\to\operatorname{arsinh}(1/2)$.
+\end{itemize}
+
+So the delta is exactly: (a) lifting the bipartite inequality to arbitrary disjoint $A,B$
+with a spectator $E$, which replaces $|\Tr C|^2$ by $\|\Tr_{A\cup B}C\|^2$ on the right, and
+(b) solving the LP over the whole family instead of using one fixed pairing. Their
+Eqs.~(81)--(82) are precisely the $E=\emptyset$ members of that family.
+
+\paragraph{The difference family.} Their Eq.~(82) lifts to a spectator form too, by the
+same blockwise argument plus $|\sum_iz_i|\le\sum_i|z_i|$:
+$\big|\,\|\Tr_AC\|^2-\|\Tr_BC\|^2\,\big|\le2\|C\|^2-\tfrac12\|\Tr_{A\cup B}C\|^2$. Adding it
+to the LP (verified numerically) turns out to be \textbf{non-binding} for $k\le4$ --- the
+optimum is unchanged at $\gamma_3=0.312908$, $\gamma_4=0.227725$ --- and helps only
+marginally beyond: $\gamma_5$ improves $0.179029\to0.181493$, $\gamma_6$
+$0.150694\to0.150753$. Recorded because it is the natural next constraint to try and it
+does not close the gap to $1/3$.
+
+\begin{verification}
+\textbf{What:} the spectator sum family (S) and difference family (D); the LP values with
+and without (D); soundness against the padded upper bound and against sampled rank-2
+operators.
+
+\textbf{Script:} \texttt{scripts/verify\_lp\_gamma2.py}
+
+\textbf{Outcome:} pass (4/4); margins (S) $0.793$, (D) $0.419$, min slack $+0.091$.
+\end{verification}
+
+\subsection{Dimension-aware refinement}
+
+The dimension-free LP is loose in an identifiable place: at its optimum it sets $x_S=0$ for
+all $|S|=k-1$ while keeping $x_{[k]}=|\Tr C|^2=2$, which is impossible, since
+$\Tr_SC=0$ forces $\Tr C=0$. The repair is genuinely dimension-dependent. Using
+$\operatorname{rank}(\Tr_SC)\le r_S:=2\min(d^{|S|},d^{k-|S|})$ (the partial trace of a
+rank-$\le2$ operator is a sum of two products of reshapes) together with
+$|\Tr M|\le\sqrt{\operatorname{rank}M}\,\|M\|_\HS$ and the rank lemma gives two further
+families,
+\[
+\text{(D1)}\quad x_{[k]}\le r_S\,x_S,
+\qquad
+\text{(D2)}\quad x_{S'}\le r_S\,x_S \ \ (S\subseteq S'),
+\]
+and hence a bound $\gamma_k(d)$ for each fixed $d$:
+\begin{center}
+{\setlength{\tabcolsep}{8pt}\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{rrrrl}
+\toprule
+$k$ & $d$ & $1/d$ & $\gamma_k(d)$ & NPT window non-empty? \
+\midrule
+3 & 3 & $0.3333$ & $0.319027$ & no (short by $4\%$) \
+3 & 4 & $0.2500$ & $0.317368$ & \textbf{yes} \
+3 & 5 & $0.2000$ & $0.316417$ & yes \
+4 & 5 & $0.2000$ & $0.228476$ & yes \
+5 & 6 & $0.1667$ & $0.179518$ & yes \
+\bottomrule
+\end{tabular}}
+\end{center}
+
+The gain over the dimension-free LP is small, and the minimal case $d=3$ --- which would
+need $\gamma_3(3)>1/3$ --- stays just out of reach. Closing that $4\%$ gap would give the
+first rigorously NPT, provably three-copy-undistillable Werner states in the smallest
+nontrivial dimension; it is the sharpest concrete target left here.
+
+\begin{verification}
+\textbf{What:} the rank bound $\operatorname{rank}(\Tr_SC)\le r_S$, families (D1) and (D2),
+the LP values, and the same two sanity checks as above.
+
+\textbf{Method:} numeric, randomized rank-2 operators, $k\in\{2,3\}$, $d\in\{2,3,4\}$;
+exact LP via HiGHS.
+
+\textbf{Script:} \texttt{scripts/verify\_lp\_gamma\_d.py}
+
+\textbf{Outcome:} pass (5/5); observed margins (D1) $0.500$, (D2) $0.469$, minimum slack of
+the bound against sampled rank-2 operators $+0.229$.
+\end{verification}
+
+\begin{remark}[Why no bound of this type can settle the problem]
+A cruder version of the same telescoping (bounding $|q_{k-1}(\Tr_kC)|\le2(1+c)^{k-1}\|C\|^2$,
+i.e.\ keeping the odd terms as well) gives only $\theta_k\ge3-2(1+c)^k$, positive for
+$c<(3/2)^{1/k}-1$, which at $k=3$ is $0.1447$. More importantly, \emph{every} bound of this
+telescoping shape decays like $1/k$: the loss comes from discarding the alternating
+cancellation inside $q_{k-1}(\Tr_kC)$, and the surviving geometric factor forces
+$k\gamma_k=O(1)$. Since NPT bound entanglement needs a constant $\gamma>1/d$ uniform in $k$,
+no refinement of this argument can resolve it. A non-telescoping idea is required.
+\end{remark}
+
+\section{Method}
+
+All searches minimise $\theta$ over the pair $(\psi,\chi)$.
+
+\paragraph{Degeneracy-free parametrisation.} $B_c$ is invariant under the filtering pair
+$(\psi,\chi)\mapsto((A\otimes I)\psi,(A^{-\dagger}\otimes I)\chi)$ for invertible $2\times2$
+$A$, because $\rho^\psi_{0S}\mapsto A\rho^\psi_{0S}A^\dagger$ and
+$\rho^\chi_{0S}\mapsto A^{-\dagger}\rho^\chi_{0S}A^{-1}$. Whenever $\rho^\psi_0$ has full
+rank we may therefore fix $\rho^\psi_0=I/2$ and $\|\chi\|=1$, so that
+$A_0=\Tr[\rho^\psi_0\rho^\chi_0]=1/2$ and $\theta=2B_c$. This matters: minimising the raw
+ratio $B_c/A_0$ lets the optimiser drive $A_0\to0$, where $B_c\to0$ as well, and the
+resulting $0/0$ produces spurious large negative values. We impose $\rho^\psi_0=I/2$ via a
+closed-form $2\times2$ inverse square root (smooth, and free of the eigenvector phase
+ambiguity that makes \texttt{torch.linalg.eigh} non-differentiable in the complex case).
+
+\paragraph{Optimisers.} (i) An alternating see-saw (each half-step an eigenproblem, hence
+monotone). This turned out to be unreliable --- at $d=3,k=2,c=0.4$ it returns $0.20$ from
+random starts while the padded one-copy optimiser already achieves $0.12$ --- and is kept
+only as a cross-check. (ii) Batched Adam over hundreds of random restarts, seeded also with
+the structured extremisers. (iii) A Schur--Weyl restricted search (Section~\ref{sec:iso}).
+
+\paragraph{Upper bounds used as seeds.} Padding the one-copy optimiser with product qudits
+multiplies $B_c$ by $(1-c)$ per factor and leaves $A_0$ fixed, so
+$\theta_k(c)\le(1-2c)(1-c)^{k-1}$. Padding instead with a \emph{traceless} rank-one factor
+annihilates every partial trace touching it, giving $\theta_k(c)\le\theta_1(c)=1-2c$. For
+$c\le1/2$ the first bound is stronger, and it vanishes exactly at $c=1/2$ for every $k$.
+The GHZ-like state $(|0\rangle|e_0\rangle^{\otimes k}+|1\rangle|e_1\rangle^{\otimes k})/\sqrt2$
+gives $\theta\le(1-c)^k+(-c)^k$, which also vanishes at $c=1/2$ for every \emph{odd} $k$.
+
+\begin{tcolorbox}[colback=red!4,colframe=red!40,title=Recorded failure mode]
+An early torch-only run reported $\min D_{1/2}=-6.87\times10^{-2}$ at $d=3,k=3$, i.e.\ a
+counterexample to the endpoint conjecture. It was false. The saved witness evaluates to
+$0$ in both the numpy and the torch implementations, and a $d=3$ counterexample would have
+to embed into $d=4$, where the same run reported $0$. The cause is catastrophic
+cancellation in the batched alternating sum $\sum_R(-c)^{k-|R|}P_R$, whose terms are
+$O(1)$ and whose value is $O(10^{-16})$ at the optimum; it is trajectory-dependent and
+disappeared when the BLAS thread count changed the summation order. Every reported
+minimum is now re-evaluated with the independent numpy implementation before being
+recorded, and only re-verified values are reported.
+\end{tcolorbox}
+
+\section{Experiments}
+
+\subsection*{E001/E002 (superseded)}
+Initial see-saw and diagonal-only scans. Superseded by E004: the see-saw is unreliable
+(above) and the diagonal problem is a strict relaxation of E004. Retained in
+\texttt{scripts/} for provenance; their conclusions are not used.
+
+\subsection*{E003: exact Hessian at the equality points}
+\paragraph{Goal.} Decide local minimality exactly, rather than trusting random restarts.
+\paragraph{Hypothesis.} If the endpoint conjecture fails, a descent direction must exist,
+and the equality points (where the inequality is tight) are where to look.
+\paragraph{Method.} At $c=1/2$, $B_{1/2}$ is a quartic polynomial in the real coordinates of
+$(\psi,\chi)$. At each equality point we compute the exact gradient and Hessian by
+automatic differentiation, count negative eigenvalues, and --- since a PSD Hessian does not
+settle a quartic --- additionally minimise $B_{1/2}$ restricted to the affine space
+(point $+$ Hessian null space), i.e.\ exactly along the flat directions.
+\paragraph{Implementation.} \texttt{scripts/exp003\_hessian.py}.
+\paragraph{Results.} See Table~\ref{tab:hess}.
+\paragraph{Analysis.} At every equality point the gradient vanishes identically, the
+Hessian has no negative eigenvalue, and the quartic does not dip below zero along any flat
+direction. GHZ at even $k$ is not an equality point ($B_{1/2}=2^{-k}>0$), so its indefinite
+Hessian carries no information and is filtered out.
+
+\subsection*{E004: global measurement of $\theta_k(c)$}
+\paragraph{Goal.} Determine $\theta_k(c)$, hence $c_k$, for $k\le5$ and $d\le6$.
+\paragraph{Hypothesis (H1, sharp endpoint form).} $\theta_k(c)=(1-2c)(1-c)^{k-1}$ for
+$0\le c\le\tfrac12$, i.e.\ the padded one-copy optimiser is globally optimal. This implies
+the endpoint conjecture $c_k=1/2$.
+\paragraph{Method.} Batched Adam in the degeneracy-free parametrisation, seeded with the
+structured extremisers, every reported minimum re-verified in numpy.
+\paragraph{Implementation.} \texttt{scripts/exp004\_theta.py}, \texttt{src/bilinear.py}.
+\paragraph{Results.} See Table~\ref{tab:theta}.
+
+\subsection*{E005: Schur--Weyl restricted search}
+\label{sec:iso}
+\paragraph{Goal.} Search the symmetric directions specifically.
+\paragraph{Hypothesis.} $B_c$ is invariant under the diagonal $U(d)$ action on the qudits
+and under simultaneous permutation of the $k$ copies, so extremisers come in orbits and
+highly symmetric configurations are a natural hiding place for a counterexample --- this is
+the kind of structure (uniform equal-norm tight frames) that broke the analogous
+conjecture for the DiVincenzo family at two copies.
+\paragraph{Method.} Schur--Weyl duality decomposes $(\CC^d)^{\otimes k}=\bigoplus_\lambda
+S^\lambda\otimes V_\lambda$ into $S_k$-isotypic components of dimension
+$\dim S^\lambda\cdot\dim V_\lambda$. Using the isotypic projectors from the
+\texttt{schur-weyl} package we restrict $\psi$ and $\chi$ to
+$\CC^2\otimes\operatorname{ran}P_{\lambda}$ and minimise over every ordered pair of sectors.
+This is a one-sided search: a negative value would be a genuine certificate, and finding
+none strengthens the evidence exactly where it is weakest.
+\paragraph{Implementation.} \texttt{scripts/exp005\_isotypic.py}.
+\paragraph{Results.} See Table~\ref{tab:iso}.
+
+\section{The three-copy endpoint: locating the remaining gap}
+\label{sec:k3gap}
+
+Wu and Zou (arXiv:2608.02647, 31 July 2026) prove the $k=3$ endpoint
+$q_3(-\tfrac12,C)\ge0$ for all positive semidefinite rank-two $C$, all \emph{normal}
+rank-two $C$, and additionally whenever the local output--input support overlap is $\le2$
+at some site. What is open is the genuinely nonnormal sector with full local support
+everywhere.
+
+This matters for our earlier searches: our equality cases all had $\chi=\psi$, hence
+$C=\sum_a|\psi_a\rangle\langle\psi_a|\succeq0$ --- inside the \emph{proved} region. A
+generic optimiser is attracted there and may never probe the open sector.
+
+\paragraph{E007: forcing nonnormality.} Minimising $\theta$ subject to
+$\nu(C)=\|CC^\dagger-C^\dagger C\|^2/\|C\|^4\ge\nu_0$ (10 runs, $d=2,3,4$) never produced a
+negative value. More informative is the structure of the minimisers: \textbf{every
+configuration attaining $\theta=0$ had at least one site of local rank $\le2$}, while
+forcing $\nu_0\ge1$ pushed the value strictly positive ($\theta=0.058$ at $d=3$, $0.277$ at
+$d=4$). The equality set appears to lie inside Wu--Zou's low-overlap region.
+
+\paragraph{E008: the full-support sector.} Imposing instead
+$\lambda_{\min}(R)/\Tr(R)\ge\varepsilon$ on all six local reductions
+$R_i^{\rm out}=\Tr_{j\ne i}(CC^\dagger)$, $R_i^{\rm in}=\Tr_{j\ne i}(C^\dagger C)$ --- a
+sector \emph{containing} everything Wu--Zou leave open, since overlap $\ge3$ at every site
+forces full local rank --- the minimum is bounded away from zero and grows with
+$\varepsilon$:
+\begin{center}
+{\setlength{\tabcolsep}{7pt}\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{rrrrrrrr}
+\toprule
+$d$ & $\varepsilon=0.02$ & $0.05$ & $0.10$ & $0.15$ & $0.20$ & $0.25$ & $0.30$ \
+\midrule
+3 & $0.0459$ & $0.0255$ & $0.0504$ & $0.0757$ & $0.0980$ & $0.1262$ & $0.5473$ \
+4 & --- & $0.2291$ & $0.6444$ & $0.5173$ & --- & --- & --- \
+\bottomrule
+\end{tabular}}
+\end{center}
+(the maximum possible $\varepsilon$ is $1/d$). So on a sector containing the open case,
+$\theta_3\gtrsim0.025$ rather than $0$.
+
+\paragraph{Why: the odd terms are suppressed when reductions are spread.} Only the
+odd-$|S|$ terms of $q_k=\sum_S(-\tfrac12)^{|S|}\|\Tr_SC\|^2$ are negative, and they are
+controlled by how spread the local reductions are.
+
+\begin{lemma}[Spread bound]
+\label{lem:spread}
+For unit $a,b\in H_i\otimes H_{\rm rest}$,
+$\ \|\Tr_i(|a\rangle\langle b|)\|_\HS\le\sqrt{\lambda_{\max}(\rho^b_i)}$, and symmetrically
+with $\rho^a_i$.
+\end{lemma}
+\begin{proof}
+Write $a=\sum_m|m\rangle_i|a^{(m)}\rangle$, $b=\sum_m|m\rangle_i|b^{(m)}\rangle$, so
+$\Tr_i(|a\rangle\langle b|)=AB^\dagger$ with $A,B$ the matrices of columns $a^{(m)},b^{(m)}$.
+Then $\|AB^\dagger\|_\HS\le\|A\|_\HS\|B\|_{\rm op}=\|a\|\,\sigma_{\max}(B)$, and
+$\sigma_{\max}(B)^2=\lambda_{\max}(B^\dagger B)=\lambda_{\max}(\rho^b_i)$, since $B^\dagger B$
+is the Gram matrix $(\langle b^{(m)}|b^{(m')}\rangle)$, i.e.\ the reduction to site $i$.
+\end{proof}
+
+\begin{corollary}
+For rank-two $C$ with right singular vectors $b_1,b_2$, put
+$L_i=\max_a\lambda_{\max}(\rho^{b_a}_i)$ and $L=\max_iL_i$. Then
+$\|\Tr_iC\|^2\le2L_i\|C\|^2$, and dropping the non-negative even terms and using
+$|\Tr C|^2\le2\|C\|^2$,
+\[
+q_3(-\tfrac12,C)\;\ge\;\Big(\tfrac34-3L\Big)\|C\|^2 .
+\]
+In particular the three-copy endpoint holds for every rank-two $C$ with $L<1/4$.
+\end{corollary}
+
+This is a proved sufficient condition complementary to Wu--Zou's (theirs is a rank/overlap
+condition, this is a spectral spread condition). It is non-vacuous for $d\ge5$: the most
+spread case has $L=1/d$, so $\tfrac34-3L>0$ once $d\ge5$. At $d=3,4$ it falls short by a
+constant factor, because it discards the even terms $\|\Tr_{ij}C\|^2$, which E008 shows are
+not negligible. \textbf{Closing that constant factor --- keeping the even terms in the
+estimate --- would, together with Wu--Zou, settle $k=3$.} That is the sharpest concrete
+target this study produces.
+
+\begin{verification}
+\textbf{What:} Lemma~\ref{lem:spread} and its rank-two corollary, over $k\in\{2,3\}$,
+$d\in\{2,3,4\}$, 400 random instances each; plus the E007/E008 searches, every reported
+minimum re-evaluated in numpy.
+
+\textbf{Scripts:} \texttt{scripts/verify\_spread\_lemma.py},
+\texttt{scripts/exp007\_nonnormal.py}, \texttt{scripts/exp008\_full\_support.py}
+
+\textbf{Outcome:} pass (2/2); margins $0.990$ and $0.533$. E007: 10 runs, 0 negatives.
+E008: 10 runs, 0 negatives, minimum $+0.0255$.
+\end{verification}
+
+\section{An unbounded family of NPT undistillable Werner states}
+\label{sec:existence}
+
+The full NPT bound entanglement problem asks for a \emph{single} state undistillable at
+\emph{every} copy number. The statement below is much weaker. It is a direct corollary of
+having $\gamma_n>0$ for each $n$, and is recorded not because the existence claim is deep
+--- it is not, and anyone holding the constants of arXiv:2607.24479 has it in one line ---
+but because it makes precise what the constants actually buy, and because the quantity that
+matters is the \emph{dimension} it requires, which is where Section~\ref{sec:gamma}
+improves on the literature.
+
+\begin{proposition}
+\label{thm:existence}
+Let $t^\star=0.4428544\ldots$ be the unique root of $e^t+t=2$. For every $n\ge1$ set
+$\gamma_n:=t^\star/n$. Then for every $d>1/\gamma_n$ and every $\alpha$ with
+$-\gamma_n\le\alpha<-1/d$, the Werner state $\varrho(d,\alpha)$ is NPT --- hence entangled
+--- and $n$-copy undistillable. In particular such states exist for every $n$, in local
+dimension $d=O(n)$.
+\end{proposition}
+
+\begin{proof}
+Undistillability. Unrolling the recursion of Section~\ref{sec:gamma},
+$\theta_k\ge\theta_{k-1}-c[(1+c)^{k-1}+(1-c)^{k-1}]$, from $\theta_2\ge(1-c)(1-2c)$ and
+summing the two geometric series gives $\theta_n(c)\ge f_n(c)$ with the closed form
+\[
+f_n(c)=(1-c)(1-2c)+4c+(1-c)^n-(1+c)^n=1+c+2c^2+(1-c)^n-(1+c)^n .
+\]
+By Bernoulli $(1-c)^n\ge1-nc$ for $c\in[0,1]$, and $(1+c)^n\le e^{nc}$, so
+\[
+f_n(c)\;\ge\;2+c+2c^2-nc-e^{nc}\;\ge\;2-nc-e^{nc}.
+\]
+The map $t\mapsto e^t+t$ is strictly increasing, so $2-t-e^{t}>0$ exactly for $t<t^\star$.
+Hence $c\le\gamma_n=t^\star/n$ gives $nc\le t^\star$ and therefore $\theta_n(c)\ge f_n(c)\ge0$,
+which by the reduction of Section~1 is precisely $n$-copy undistillability of
+$\varrho(d,-c)$, in every dimension.
+
+NPT. $\varrho(d,\alpha)^\Gamma=(I+\alpha d\,Q)/(d^2+\alpha d)$ with $Q$ a rank-one
+projector, whose eigenvalues are $1$ and $1+\alpha d$; so $\alpha<-1/d$ makes it
+non-positive. Since $-\gamma_n\le\alpha<-1/d$ requires $1/d<\gamma_n$, the interval is
+non-empty exactly when $d>1/\gamma_n$, and such $d$ exists because $\gamma_n>0$.
+\end{proof}
+
+\begin{remark}[What is and is not being claimed]
+Proposition~\ref{thm:existence} gives, for each $n$, a \emph{different} state in a
+\emph{growing} dimension. It says nothing about bound entanglement: for any \emph{fixed}
+$d$ the window $(1/d,\gamma_k]$ is empty once $k>t^\star d$. Indeed the linear growth of the
+required dimension is not a feature of the result but the exact expression of the
+obstruction --- a family with $d$ \emph{bounded} in $n$ would, by a compactness argument on
+the nested closed sets of admissible $\alpha$, produce a single undistillable NPT state and
+settle the open problem. So the only real content here is quantitative: how small can the
+required $d$ be made.
+\end{remark}
+
+The point of the improved constants of Section~\ref{sec:gamma} is precisely that they
+shrink the dimension needed:
+
+\begin{center}
+{\setlength{\tabcolsep}{7pt}\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{rrrrl}
+\toprule
+$n$ & $\gamma_n$ (LP) & least $d$ & $\alpha$ & $\lambda_{\min}(\varrho^\Gamma)$ \
+\midrule
+3 & $0.312908$ & 4 & $-0.2815$ & $-8.46\times10^{-3}$ \
+4 & $0.227725$ & 5 & $-0.2139$ & $-2.90\times10^{-3}$ \
+5 & $0.179029$ & 6 & $-0.1728$ & $-1.06\times10^{-3}$ \
+6 & $0.150694$ & 7 & $-0.1468$ & $-5.72\times10^{-4}$ \
+7 & $0.128205$ & 8 & $-0.1266$ & $-2.04\times10^{-4}$ \
+8 & $0.111596$ & 9 & $-0.1114$ & $-2.73\times10^{-5}$ \
+9 & $0.099228$ & 11 & $-0.0951$ & $-3.81\times10^{-4}$ \
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Asymptotically the required dimension is $d\gtrsim1/\gamma_n$. The published constants give
+$n/\operatorname{arsinh}(1/2)\approx2.08\,n$; the LP constants of Section~\ref{sec:gamma}
+give $\approx1.12\,n$ over the range computed ($n\le9$, where $n\gamma_n\approx0.89$), so
+the family reaches any given copy number in roughly half the dimension.
+
+\begin{remark}[What this is not]
+Theorem~\ref{thm:existence} produces, for each $n$, a \emph{different} state, in a
+\emph{growing} dimension. It does not produce one state undistillable for all $n$, and it
+cannot: every known $\gamma_k$ tends to $0$, so the window
+$(1/d,\gamma_k]$ closes for any fixed $d$ once $k$ is large enough. Obtaining a constant
+$\gamma>0$ uniform in $k$ is precisely the open problem, and the remark below explains why
+no telescoping argument can supply one.
+\end{remark}
+
+\begin{verification}
+\textbf{What:} $\gamma_n>0$ for $n\le40$; and for each $n\le9$ an explicit
+$\varrho(d,\alpha)$ checked to be a valid state, to be NPT (negative eigenvalue of the
+partial transpose exhibited), and to satisfy $-\alpha\le\gamma_n$.
+
+\textbf{Script:} \texttt{scripts/verify\_existence.py}
+
+\textbf{Outcome:} pass (2/2).
+\end{verification}
+
+\section{What this says about ``an undistillable Werner state''}
+
+\begin{enumerate}
+\item \textbf{Rigorously undistillable, trivially:} every $\varrho(d,\alpha)$ with
+$\alpha\ge-1/d$ is separable, hence undistillable. Not interesting: the question is
+whether an \emph{entangled} (NPT) one exists.
+\item \textbf{Rigorously NPT and $k$-copy undistillable:} $\varrho(d,\alpha)$ with
+$-\gamma_k\le\alpha<-1/d$. This is non-empty only when $\gamma_k>1/d$. The published
+$\gamma_3=1/6$ requires $d\ge7$; the improved $\gamma_3\ge0.2144$ of
+Section~\ref{sec:gamma} reaches $d\ge5$. Example: $\varrho(5,-0.21)$ is NPT and provably
+three-copy undistillable.
+\item \textbf{The conjectured answer:} the whole one-copy-undistillable NPT family
+$-\tfrac12\le\alpha<-\tfrac1d$, $d\ge3$, is undistillable. The extremal member, and the
+sharpest candidate, is
+\[
+\varrho(d,-\tfrac12)=\frac{I-\tfrac12F}{d^2-\tfrac d2}=\frac{2I-F}{2d^2-d},
+\qquad\text{smallest case}\quad \varrho(3,-\tfrac12)=\frac{2I-F}{15}.
+\]
+This state is NPT (since $-\tfrac12<-\tfrac13$), one-copy undistillable, now
+provably two-copy undistillable, and --- on the evidence here --- three-, four- and
+five-copy undistillable.
+\end{enumerate}
+Whether it is undistillable for all $k$ remains the open NPT bound entanglement problem.
+
+\section{Summary table}
+\input{tables.tex}
+
+\end{document}
